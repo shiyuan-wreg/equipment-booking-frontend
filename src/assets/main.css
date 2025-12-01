@@ -1,0 +1,21 @@
+/* src/assets/main.css */
+
+/* 基础样式重置和通用设置 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* 可以在这里添加更多全局样式... */
