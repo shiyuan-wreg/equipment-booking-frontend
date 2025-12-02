@@ -16,3 +16,6 @@ export default defineConfig({
     },
   },
 })
+const VITE_API_BASE_URL = 'https://lab-equipment-reservation-production-1540.up.railway.app';
+
+export { VITE_API_BASE_URL };
