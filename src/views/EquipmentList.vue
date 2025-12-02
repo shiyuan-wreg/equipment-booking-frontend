@@ -3,7 +3,7 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { useEquipmentStore } from '@/stores/equipment';
-import { VITE_API_BASE_URL } from '@/config'; // 确保引入了配置
+
 
 const equipmentStore = useEquipmentStore();
 
