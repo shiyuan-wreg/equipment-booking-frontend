@@ -35,7 +35,7 @@
             type="primary" 
             @click="handleLogin" 
             :loading="loading"
-            native-type="submit" <!-- 保留这个，使 Enter 键也能触发 -->
+            native-type="submit" 
           >
             登录
           </el-button>
