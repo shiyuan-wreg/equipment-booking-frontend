@@ -1,9 +1,11 @@
 // src/stores/equipment.js
 import { defineStore } from 'pinia';
+import apiClient from '@/api'; // 确保路径正确
 
 // --- 关键：使用 import.meta.env 获取环境变量 ---
 // 这会自动从 .env 文件中读取 VITE_API_BASE_URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;出于更改需求，该行注释
 
 export const useEquipmentStore = defineStore('equipment', {
   state: () => ({
@@ -14,63 +16,51 @@ export const useEquipmentStore = defineStore('equipment', {
 
   actions: {
 
-    // --- 修改点 1：获取设备列表 ---
+    // --- 修改点 2：使用 apiClient 重构 fetchEquipments ---
     async fetchEquipments() {
       this.loading = true;
       this.error = null;
-      console.log(`[Store] 开始请求设备列表: ${API_BASE_URL}/api/equipments`);
+      console.log(`[Store] 开始请求设备列表...`);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/equipments`);
+        // 直接使用 apiClient，它会自动使用 baseURL
+        const response = await apiClient.get('/equipments'); // 请求 /api/equipments
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`获取设备失败 (${response.status}): ${errorText}`);
-        }
+        console.log('[Store] 设备列表获取成功:', response.data);
 
-        const data = await response.json();
-        console.log('[Store] 设备列表获取成功:', data);
-
-        this.equipments = data;
+        this.equipments = response.data;
       } catch (err) {
         console.error('[Store] 获取设备列表时出错:', err);
-        this.error = err.message;
+        // Axios 错误对象结构略有不同
+        this.error = err.response?.data?.message || err.message || '未知错误';
       } finally {
         this.loading = false;
       }
     },
 
-    // --- 修改点 2：创建预订 ---
+    // --- 修改点 3：使用 apiClient 重构 createBooking ---
     async createBooking(bookingData) {
       console.log('[Store] 开始创建预订:', bookingData);
 
       try {
+        // 构造符合后端 API 的请求体
         const requestBody = {
           equipment_id: bookingData.equipment_id,
           user_name: bookingData.user_name || '匿名用户',
           booking_date: bookingData.booking_date || new Date().toISOString().split('T')[0],
         };
 
-        const response = await fetch(`${API_BASE_URL}/api/bookings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
+        // 使用 apiClient 发送 POST 请求
+        const response = await apiClient.post('/bookings', requestBody); // 请求 /api/bookings
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `预订失败 (${response.status})`);
-        }
+        console.log('[Store] 预订创建成功:', response.data);
 
-        const result = await response.json();
-        console.log('[Store] 预订创建成功:', result);
-
-        return { success: true, data: result };
+        return { success: true, data: response.data };
       } catch (err) {
         console.error('[Store] 创建预订时出错:', err);
-        return { success: false, error: err.message };
+         // Axios 错误对象结构略有不同
+        const errorMessage = err.response?.data?.message || err.message || '预订失败';
+        return { success: false, error: errorMessage };
       }
     },
   },
