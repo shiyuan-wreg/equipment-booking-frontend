@@ -7,12 +7,16 @@
           <span>用户登录</span>
         </div>
       </template>
+      <!-- 
+        关键修改：移除了 @submit.prevent="handleLogin"，因为 el-form-item 内的 button 
+        类型为 submit 时，默认就会触发表单提交。我们直接在 button 上绑定 click 事件更清晰。
+        或者保留，但 handleLogin 必须是 async 函数来处理 Promise。
+      -->
       <el-form
         ref="loginFormRef"
         :model="loginForm"
         :rules="loginRules"
         label-width="80px"
-        @submit.prevent="handleLogin"
       >
         <el-form-item label="用户名" prop="username">
           <el-input v-model="loginForm.username" placeholder="请输入用户名" />
@@ -26,13 +30,17 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" native-type="submit" :loading="loading">登录</el-button>
-          <!-- 可以添加一个“重置”按钮 -->
-          <!-- <el-button @click="resetForm(loginFormRef)">重置</el-button> -->
+          <!-- 关键修改：绑定 click 事件，并传递表单数据 -->
+          <el-button 
+            type="primary" 
+            @click="handleLogin" 
+            :loading="loading"
+            native-type="submit" <!-- 保留这个，使 Enter 键也能触发 -->
+          >
+            登录
+          </el-button>
         </el-form-item>
       </el-form>
-      <!-- 可以添加一个“去注册”链接，如果未来有注册功能 -->
-      <!-- <p>还没有账号？<el-link type="primary" @click="$router.push('/register')">立即注册</el-link></p> -->
     </el-card>
   </div>
 </template>
@@ -41,83 +49,75 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores/user' // 引入我们刚创建的 Store
+import { useUserStore } from '@/stores/user'
 
-// 获取 Store 和 Router 实例
 const userStore = useUserStore()
 const router = useRouter()
 
-// 控制登录按钮加载状态
 const loading = ref(false)
-
-// 表单引用，用于调用表单方法（如验证）
 const loginFormRef = ref()
 
-// 表单数据模型
 const loginForm = reactive({
   username: '',
   password: ''
 })
 
-// 表单验证规则
 const loginRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' }
-    // 可以添加更多规则，如最小长度
-    // { min: 6, message: '密码长度至少6位', trigger: 'blur' }
   ]
 }
 
-// 处理登录逻辑
+// 关键修改：将 handleLogin 改为 async 函数
 const handleLogin = async () => {
-  // 确保表单引用存在
   if (!loginFormRef.value) return
 
-  // 触发表单验证
-  await loginFormRef.value.validate((valid) => {
-    if (valid) {
-      // 验证通过，开始登录流程
-      loading.value = true
+  // 使用 Element Plus 表单的 validate 方法，它返回一个 Promise
+  try {
+    // await loginFormRef.value.validate(); // 这种方式也可以，但我们用回调
+    await new Promise((resolve, reject) => {
+       loginFormRef.value.validate((valid) => {
+         if (valid) {
+           resolve();
+         } else {
+           reject(new Error('表单验证失败'));
+         }
+       });
+    });
 
-      // 模拟 API 调用（实际项目中这里会发送 HTTP 请求）
-      setTimeout(() => {
-        // 假设登录成功，后端返回用户信息
-        // 这里我们做一个简单的角色判断模拟
-        const mockUserInfo = {
-          id: 1,
-          username: loginForm.username,
-          role: loginForm.username.toLowerCase() === 'admin' ? 'admin' : 'user' // 简单模拟区分角色
-        }
+    loading.value = true
 
-        // 调用 Store 的 login action
-        userStore.login(mockUserInfo)
+    // 调用 Store 的 login action，传入真实的表单数据
+    const result = await userStore.login({
+      username: loginForm.username,
+      password: loginForm.password
+    })
 
-        // 显示成功消息
-        ElMessage.success('登录成功!')
+    loading.value = false
 
-        // 登录成功后跳转到首页
-        router.push('/')
-
-        // 结束加载状态
-        loading.value = false
-      }, 1000) // 模拟网络延迟
-
+    if (result.success) {
+      ElMessage.success(result.message || '登录成功!')
+      // 登录成功后跳转到首页
+      router.push('/')
     } else {
-      // 验证失败
-      console.log('表单验证失败!')
-      return false
+      // 登录失败，显示错误信息
+      ElMessage.error(result.message || '登录失败')
     }
-  })
+  } catch (err) {
+    // 这里捕获的是表单验证失败或 login action 抛出的错误
+    loading.value = false
+    if (err.message !== '表单验证失败') {
+        // 如果是 login action 内部未捕获的错误，也应该提示
+        ElMessage.error('登录过程中发生未知错误')
+        console.error('Unexpected error during login:', err)
+    }
+    // 表单验证失败的情况，Element Plus 通常会自己显示错误提示，这里可以不做额外处理
+    console.log('Login process cancelled or validation failed.')
+  }
 }
-
-// 重置表单函数（如果需要）
-// const resetForm = (formEl) => {
-//   if (!formEl) return
-//   formEl.resetFields()
-// }
 </script>
 
 <style scoped>
