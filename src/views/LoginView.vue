@@ -73,51 +73,26 @@ const loginRules = {
 
 // 关键修改：将 handleLogin 改为 async 函数
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
+  if (!loginFormRef.value) return;
 
-  // 使用 Element Plus 表单的 validate 方法，它返回一个 Promise
-  try {
-    // await loginFormRef.value.validate(); // 这种方式也可以，但我们用回调
-    await new Promise((resolve, reject) => {
-       loginFormRef.value.validate((valid) => {
-         if (valid) {
-           resolve();
-         } else {
-           reject(new Error('表单验证失败'));
-         }
-       });
-    });
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true;
+      const result = await userStore.login({
+        username: loginForm.username,
+        password: loginForm.password
+      });
+      loading.value = false;
 
-    loading.value = true
-
-    // 调用 Store 的 login action，传入真实的表单数据
-    const result = await userStore.login({
-      username: loginForm.username,
-      password: loginForm.password
-    })
-
-    loading.value = false
-
-    if (result.success) {
-      ElMessage.success(result.message || '登录成功!')
-      // 登录成功后跳转到首页
-      router.push('/')
-    } else {
-      // 登录失败，显示错误信息
-      ElMessage.error(result.message || '登录失败')
+      if (result.success) {
+        ElMessage.success('登录成功！');
+        router.push('/');
+      } else {
+        ElMessage.error(result.message || '登录失败');
+      }
     }
-  } catch (err) {
-    // 这里捕获的是表单验证失败或 login action 抛出的错误
-    loading.value = false
-    if (err.message !== '表单验证失败') {
-        // 如果是 login action 内部未捕获的错误，也应该提示
-        ElMessage.error('登录过程中发生未知错误')
-        console.error('Unexpected error during login:', err)
-    }
-    // 表单验证失败的情况，Element Plus 通常会自己显示错误提示，这里可以不做额外处理
-    console.log('Login process cancelled or validation failed.')
-  }
-}
+  });
+};
 </script>
 
 <style scoped>
