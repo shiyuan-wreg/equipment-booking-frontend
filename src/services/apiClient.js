@@ -9,7 +9,7 @@ console.log('[API Client] Base URL set to:', API_BASE_URL) // 调试日志
 
 // 2. 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: API_BASE_URL, // 所有请求的基础路径
+   baseURL: import.meta.env.VITE_API_BASE_URL, // 所有请求的基础路径
   timeout: 10000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json'
