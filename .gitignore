@@ -37,5 +37,4 @@ __screenshots__/
 
 node_modules/
 *.log
-.env
 dist/ 
