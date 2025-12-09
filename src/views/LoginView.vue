@@ -1,5 +1,11 @@
 <!-- src/views/LoginView.vue -->
 <template>
+  <div>
+    <!-- 调试用：显示当前 API base URL -->
+    <div style="color:red; font-size:12px; margin:10px;">
+      DEBUG: API Base = {{ apiBaseUrl }}
+    </div>
+    </div>
   <div class="login-container">
     <el-card class="login-box">
       <template #header>
