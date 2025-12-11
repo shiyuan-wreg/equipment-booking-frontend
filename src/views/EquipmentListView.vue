@@ -26,9 +26,10 @@
               </div>
             </template>
             <div class="card-body">
-              <p><strong>型号:</strong> {{ equipment.model }}</p>
+                <!-- 暂时注释掉 model 和 location，因为数据库没有这些字段 -->
+              <!-- <p><strong>型号:</strong> {{ equipment.model }}</p> -->
               <p><strong>描述:</strong> {{ equipment.description }}</p>
-              <p><strong>位置:</strong> {{ equipment.location }}</p>
+              <!-- <p><strong>位置:</strong> {{ equipment.location }}</p> -->
               <!-- 可以添加图片 <img :src="equipment.image" alt="设备图片" class="equipment-image"> -->
             </div>
             <div class="card-actions">
@@ -55,22 +56,20 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue' // ✅ 关键：导入 computed
 import { useRouter } from 'vue-router'
 import { useEquipmentStore } from '@/stores/equipment'
 
 const router = useRouter()
 const equipmentStore = useEquipmentStore()
 
-// 不再定义 equipmentList！直接用 store 的数据
+// 使用 store 的响应式数据
 const equipmentList = computed(() => equipmentStore.equipments)
 
-// 获取状态文本
 const getStatusText = (status) => {
   switch (status) {
     case 'available': return '可预约'
-    case 'booked': return '已预约'     // 注意：后端用的是 'booked'，不是 'unavailable'
-    case 'maintenance': return '维护中'
+    case 'booked': return '已预约'
     default: return '未知'
   }
 }
@@ -80,7 +79,7 @@ const viewDetails = (id) => {
 }
 
 onMounted(() => {
-  equipmentStore.fetchEquipments() // ← 关键：加载真实数据
+  equipmentStore.fetchEquipments()
 })
 </script>
 
