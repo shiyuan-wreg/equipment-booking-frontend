@@ -9,17 +9,28 @@ export const useEquipmentStore = defineStore('equipment', {
   }),
 
   actions: {
-    async fetchEquipments() {
-      this.loading = true;
-      try {
-        const response = await equipmentService.getAll();
-        this.equipments = response.data; // ✅ 正确
-      } catch (error) {
-        console.error('获取设备列表失败:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
+   async fetchEquipments() {
+  this.loading = true;
+  try {
+    const response = await equipmentService.getAll();
+    // 调试：看 response 到底是什么
+    console.log('API Response:', response);
+
+    // 关键修复：判断 response 是数组还是包装对象
+    if (Array.isArray(response)) {
+      this.equipments = response;
+    } else if (Array.isArray(response.data)) {
+      this.equipments = response.data;
+    } else {
+      this.equipments = [];
+    }
+  } catch (error) {
+    console.error('获取设备列表失败:', error);
+    this.equipments = [];
+  } finally {
+    this.loading = false;
+  }
+},
 
     async addEquipment(data) {
       try {
