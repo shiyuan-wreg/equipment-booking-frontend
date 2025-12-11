@@ -1,24 +1,9 @@
 // src/services/equipmentService.js
-import apiClient from '@/services/apiClient';
+import apiClient from './apiClient';
 
 export const equipmentService = {
-  // 获取所有设备
-  getAll() {
-    return apiClient.get('/api/equipments');
-  },
-
-  // 创建设备
-  create(equipmentData) {
-    return apiClient.post('/api/equipments', equipmentData);
-  },
-
-  // 更新设备
-  update(id, equipmentData) {
-    return apiClient.put(`/api/equipments/${id}`, equipmentData);
-  },
-
-  // 删除设备
-  delete(id) {
-    return apiClient.delete(`/api/equipments/${id}`);
-  }
+  getAll: () => apiClient.get('/api/equipments'),
+  create: (data) => apiClient.post('/api/equipments', data),
+  update: (id, data) => apiClient.put(`/api/equipments/${id}`, data), // ← 必须有这行
+  delete: (id) => apiClient.delete(`/api/equipments/${id}`)
 };
