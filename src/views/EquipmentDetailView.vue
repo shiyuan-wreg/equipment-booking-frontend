@@ -39,38 +39,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEquipmentStore } from '@/stores/equipment';
-import { useUserStore } from '@/stores/user'; // 假设你有 user store 来获取当前用户 ID
+import { useUserStore } from '@/stores/user';
 import { ElMessage } from 'element-plus';
 
 const route = useRoute();
 const equipmentStore = useEquipmentStore();
 const userStore = useUserStore();
 
-const equipmentId = parseInt(route.params.id); // 从 URL 参数获取设备 ID
+const equipmentId = parseInt(route.params.id);
 const equipment = ref(null);
 const bookingForm = ref({
   equipment_id: equipmentId,
   booking_date: '',
-  user_id: userStore.userInfo?.id // 使用当前登录用户的 ID
+  user_id: userStore.userInfo?.id
 });
 
-// 获取设备详情
-const loadEquipment = async () => {
-  try {
-    equipment.value = await equipmentStore.fetchEquipmentById(equipmentId);
-  } catch (error) {
-    ElMessage.error('无法加载设备详情');
+// 从 store 的完整列表中查找设备
+const findEquipment = () => {
+  const found = equipmentStore.equipments.find(eq => eq.id === equipmentId);
+  if (found) {
+    equipment.value = found;
+  } else {
+    ElMessage.error('无法查看设备详情');
   }
 };
 
+// 确保设备列表已加载
+const ensureEquipmentsLoaded = async () => {
+  if (equipmentStore.equipments.length === 0) {
+    await equipmentStore.fetchEquipments(); // 触发加载
+  }
+  findEquipment();
+};
+
 onMounted(() => {
-  loadEquipment();
+  ensureEquipmentsLoaded();
 });
 
-// 获取状态文本
+// 如果用户手动刷新详情页，store 可能为空，所以监听列表变化
+watch(
+  () => equipmentStore.equipments,
+  () => {
+    if (!equipment.value && equipmentStore.equipments.length > 0) {
+      findEquipment();
+    }
+  }
+);
+
 const getStatusText = (status) => {
   switch (status) {
     case 'available': return { type: 'success', label: '可预约' };
@@ -79,7 +97,6 @@ const getStatusText = (status) => {
   }
 };
 
-// 提交预约
 const handleBooking = async () => {
   if (!bookingForm.value.booking_date) {
     ElMessage.warning('请选择预约日期');
@@ -89,6 +106,9 @@ const handleBooking = async () => {
   try {
     await equipmentStore.createBooking(bookingForm.value);
     ElMessage.success('预约成功');
+    // 可选：刷新设备状态（因为预订后设备可能变为 booked）
+    await equipmentStore.fetchEquipments();
+    findEquipment(); // 更新当前设备状态
   } catch (error) {
     ElMessage.error('预约失败');
   }
