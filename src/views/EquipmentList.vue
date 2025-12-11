@@ -3,7 +3,8 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { useEquipmentStore } from '@/stores/equipment';
-
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore();
 
 const equipmentStore = useEquipmentStore();
 
@@ -32,17 +33,15 @@ const handleBook = async (equipmentId) => {
   // 1. 设置按钮为禁用状态和加载文本
   isBooking.value = true;
   bookingStatus.value[equipmentId] = '预约中...';
-
+  
   // 2. 构造符合后端 API 期望的预约数据
   // 注意：后端需要 equipment_id, user_name, booking_date
   // 这里的 user_name 和 booking_date 是示例，你需要根据实际情况获取或让用户输入
   const bookingPayload = {
-    equipment_id: equipmentId,
-    // TODO: 替换为真实的用户名，例如从登录状态获取
-    user_name: '测试用户',
-    // TODO: 替换为用户选择的日期，或默认今天
-    booking_date: new Date().toISOString().split('T')[0], // 获取 YYYY-MM-DD 格式的今天日期
-  };
+  equipment_id: equipmentId,
+  user_name: userStore.userInfo?.username || '匿名用户', // ← 关键修改
+  booking_date: selectedDate.value || new Date().toISOString().split('T')[0],
+};
 
   try {
     // 3. 调用 store 中修改过的 createBooking action

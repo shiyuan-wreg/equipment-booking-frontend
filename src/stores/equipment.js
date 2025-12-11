@@ -63,5 +63,20 @@ export const useEquipmentStore = defineStore('equipment', {
         return { success: false, error: errorMessage };
       }
     },
+    async addEquipment(equipmentData) {
+      await apiClient.post('/api/equipments', equipmentData);
+      this.fetchEquipments(); // 自动刷新
+    },
+
+    async updateEquipment(id, equipmentData) {
+      await apiClient.put(`/api/equipments/${id}`, equipmentData);
+      this.fetchEquipments();
+    },
+
+    async deleteEquipment(id) {
+      await apiClient.delete(`/api/equipments/${id}`);
+      this.fetchEquipments();
+    }
+    
   },
 });
