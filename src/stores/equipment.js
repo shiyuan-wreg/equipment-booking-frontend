@@ -12,8 +12,8 @@ export const useEquipmentStore = defineStore('equipment', {
     async fetchEquipments() {
       this.loading = true;
       try {
-        const response = await equipmentService.getAll(); // ✅ 使用 service
-        this.equipments = response.data;
+        const response = await equipmentService.getAll();
+        this.equipments = response.data; // ✅ 正确
       } catch (error) {
         console.error('获取设备列表失败:', error);
       } finally {
@@ -23,7 +23,7 @@ export const useEquipmentStore = defineStore('equipment', {
 
     async addEquipment(data) {
       try {
-        await equipmentService.create(data); // ✅ 使用 service
+        await equipmentService.create(data);
         await this.fetchEquipments();
         return { success: true };
       } catch (error) {
@@ -31,15 +31,15 @@ export const useEquipmentStore = defineStore('equipment', {
       }
     },
 
-    async updateEquipment(id, equipmentData) {
+    // ✅ 修复：统一使用 equipmentService
+    async updateEquipment(id, data) {
       try {
-        await equipmentService.update(id, equipmentData);
+        await equipmentService.update(id, data); // ← 改为调用 service
         await this.fetchEquipments();
         return { success: true };
       } catch (error) {
-        const message = error.response?.data?.message || '更新失败';
-        console.error(message, error);
-        return { success: false, message };
+        const msg = error.response?.data?.message || '更新失败';
+        return { success: false, message: msg };
       }
     },
 
