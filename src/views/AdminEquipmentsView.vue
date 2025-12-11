@@ -67,10 +67,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useEquipmentStore } from '@/stores/equipment';
-
+import { ref, reactive, onMounted } from 'vue';
 const equipmentStore = useEquipmentStore();
 
 // --- 添加设备 ---
@@ -154,6 +153,9 @@ const resetEditForm = () => {
   editingEquipment.description = '';
   editingEquipment.status = 'available';
 };
+onMounted(() => {
+  equipmentStore.fetchEquipments();
+});
 </script>
 
 <style scoped>
