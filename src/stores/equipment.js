@@ -20,6 +20,26 @@ export const useEquipmentStore = defineStore('equipment', {
         this.loading = false;
       }
     },
+async fetchEquipmentById(id) {
+  try {
+    const response = await apiClient.get(`/api/equipments/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`获取设备 ${id} 失败:`, error);
+    throw error; // 抛出错误以便组件处理
+  } 
+},
+
+async createBooking(bookingData) {
+  try {
+    await apiClient.post('/api/bookings', bookingData);
+    // 可选：刷新设备列表或更新设备状态
+    await this.fetchEquipments(); // 如果需要更新设备列表
+  } catch (error) {
+    console.error('创建预约失败:', error);
+    throw error;
+  }
+},
 
     async addEquipment(data) {
       try {
