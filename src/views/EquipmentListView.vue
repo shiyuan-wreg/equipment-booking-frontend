@@ -55,81 +55,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// import axios from 'axios' // 如果连接后端 API
+import { useEquipmentStore } from '@/stores/equipment'
 
 const router = useRouter()
+const equipmentStore = useEquipmentStore()
 
-// 模拟设备数据
-const equipmentList = ref([
-  {
-    id: 1,
-    name: '高性能显微镜',
-    model: 'XYZ-1000',
-    description: '具备高分辨率成像能力，适用于细胞观察。',
-    location: 'A栋101室',
-    status: 'available' // available, unavailable, maintenance
-  },
-  {
-    id: 2,
-    name: '离心机',
-    model: 'ABC-200',
-    description: '最大转速可达15000 rpm，用于分离液体混合物。',
-    location: 'B栋205室',
-    status: 'unavailable'
-  },
-  {
-    id: 3,
-    name: 'PCR仪',
-    model: 'DEF-50',
-    description: '用于DNA扩增，具有精确的温度控制系统。',
-    location: 'C栋303室',
-    status: 'available'
-  },
-  {
-    id: 4,
-    name: '液相色谱仪',
-    model: 'GHI-300',
-    description: '用于分离、鉴定和定量混合物中的化合物。',
-    location: 'A栋105室',
-    status: 'maintenance'
-  }
-])
+// 不再定义 equipmentList！直接用 store 的数据
+const equipmentList = computed(() => equipmentStore.equipments)
 
-// 根据状态码获取中文描述
+// 获取状态文本
 const getStatusText = (status) => {
   switch (status) {
-    case 'available':
-      return '可预约'
-    case 'unavailable':
-      return '已预约'
-    case 'maintenance':
-      return '维护中'
-    default:
-      return '未知'
+    case 'available': return '可预约'
+    case 'booked': return '已预约'     // 注意：后端用的是 'booked'，不是 'unavailable'
+    case 'maintenance': return '维护中'
+    default: return '未知'
   }
 }
 
-// 查看设备详情
 const viewDetails = (id) => {
-  // 跳转到设备详情页，传递设备ID
   router.push(`/equipment/${id}`)
 }
 
-// 模拟从 API 获取数据 (如果连接后端)
-// const fetchEquipmentList = async () => {
-//   try {
-//     // const response = await axios.get('/api/equipments')
-//     // equipmentList.value = response.data
-//   } catch (error) {
-//     console.error('获取设备列表失败:', error)
-//   }
-// }
-
-// 组件挂载时获取数据
 onMounted(() => {
-  // fetchEquipmentList()
+  equipmentStore.fetchEquipments() // ← 关键：加载真实数据
 })
 </script>
 

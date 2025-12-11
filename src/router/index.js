@@ -40,9 +40,9 @@ const router = createRouter({
     // --- 新增的管理员路由 ---
     {
       path: '/admin/equipments',
-      name: 'admin-equipments',
+      name: 'AdminEquipmentsView',
       component: () => import('../views/AdminEquipmentsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true } // 需要认证且需要管理员权限
+      meta: { rrequiresAuth: true, role: 'admin' } // 需要认证且需要管理员权限
     },
     {
       path: '/admin/bookings',

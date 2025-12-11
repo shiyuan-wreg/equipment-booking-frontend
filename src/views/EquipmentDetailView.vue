@@ -103,55 +103,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// import axios from 'axios' // 如果连接后端 API
+import { useEquipmentStore } from '@/stores/equipment'
 
 const route = useRoute()
 const router = useRouter()
+const equipmentStore = useEquipmentStore()
 
 // 获取设备 ID
-const equipmentId = computed(() => route.params.id)
+const equipmentId = computed(() => parseInt(route.params.id))
 
-// 模拟设备数据 (实际项目应从 API 获取)
-const allEquipments = [
-  {
-    id: 1,
-    name: '高性能显微镜',
-    model: 'XYZ-1000',
-    description: '具备高分辨率成像能力，适用于细胞观察。',
-    location: 'A栋101室',
-    status: 'available' // available, unavailable, maintenance
-  },
-  {
-    id: 2,
-    name: '离心机',
-    model: 'ABC-200',
-    description: '最大转速可达15000 rpm，用于分离液体混合物。',
-    location: 'B栋205室',
-    status: 'unavailable'
-  },
-  {
-    id: 3,
-    name: 'PCR仪',
-    model: 'DEF-50',
-    description: '用于DNA扩增，具有精确的温度控制系统。',
-    location: 'C栋303室',
-    status: 'available'
-  },
-  {
-    id: 4,
-    name: '液相色谱仪',
-    model: 'GHI-300',
-    description: '用于分离、鉴定和定量混合物中的化合物。',
-    location: 'A栋105室',
-    status: 'maintenance'
-  }
-]
+
 
 // 当前设备数据
-const equipment = ref(null)
+const equipment = computed(() => {
+  return equipmentStore.equipments.find(eq => eq.id === equipmentId.value) || null
+})
 
 // 查找并设置当前设备
 const findEquipment = () => {
@@ -294,7 +263,9 @@ const getStatusTagType = (status) => {
 
 // 组件挂载时查找设备
 onMounted(() => {
-  findEquipment()
+  if (equipmentStore.equipments.length === 0) {
+    equipmentStore.fetchEquipments() // 如果还没加载，就加载
+  }
 })
 </script>
 
