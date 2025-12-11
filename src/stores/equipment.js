@@ -1,4 +1,3 @@
-// src/stores/equipment.js
 import { defineStore } from 'pinia';
 import { equipmentService } from '@/services/equipmentService'; // ✅ 已导入
 
@@ -13,33 +12,35 @@ export const useEquipmentStore = defineStore('equipment', {
       this.loading = true;
       try {
         const response = await equipmentService.getAll();
-        this.equipments = response.data; // ✅ 正确
+        this.equipments = response.data;
       } catch (error) {
         console.error('获取设备列表失败:', error);
       } finally {
         this.loading = false;
       }
     },
-async fetchEquipmentById(id) {
-  try {
-    const response = await apiClient.get(`/api/equipments/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`获取设备 ${id} 失败:`, error);
-    throw error; // 抛出错误以便组件处理
-  } 
-},
 
-async createBooking(bookingData) {
-  try {
-    await apiClient.post('/api/bookings', bookingData);
-    // 可选：刷新设备列表或更新设备状态
-    await this.fetchEquipments(); // 如果需要更新设备列表
-  } catch (error) {
-    console.error('创建预约失败:', error);
-    throw error;
-  }
-},
+    // ✅ 修复：使用 equipmentService
+    async fetchEquipmentById(id) {
+      try {
+        const response = await equipmentService.getById(id); // ← 改为 service 方法
+        return response.data;
+      } catch (error) {
+        console.error(`获取设备 ${id} 失败:`, error);
+        throw error;
+      }
+    },
+
+    // ✅ 修复：使用 equipmentService
+    async createBooking(bookingData) {
+      try {
+        await equipmentService.createBooking(bookingData); // ← 改为 service 方法
+        await this.fetchEquipments(); // 刷新设备状态
+      } catch (error) {
+        console.error('创建预约失败:', error);
+        throw error;
+      }
+    },
 
     async addEquipment(data) {
       try {
@@ -51,10 +52,9 @@ async createBooking(bookingData) {
       }
     },
 
-    // ✅ 修复：统一使用 equipmentService
     async updateEquipment(id, data) {
       try {
-        await equipmentService.update(id, data); // ← 改为调用 service
+        await equipmentService.update(id, data);
         await this.fetchEquipments();
         return { success: true };
       } catch (error) {

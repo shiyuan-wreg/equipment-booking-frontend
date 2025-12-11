@@ -43,6 +43,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEquipmentStore } from '@/stores/equipment';
 import { useUserStore } from '@/stores/user'; // 假设你有 user store 来获取当前用户 ID
+import { ElMessage } from 'element-plus';
 
 const route = useRoute();
 const equipmentStore = useEquipmentStore();
