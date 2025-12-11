@@ -1,8 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue' // 假设你已有登录页
-import EquipmentListView from '../views/EquipmentList.vue' // 新增导入
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,25 +35,25 @@ const router = createRouter({
       component: () => import('../views/MyBookingsView.vue'),
       meta: { requiresAuth: true }
     },
-    // --- 新增的管理员路由 ---
+    // --- 管理员路由 ---
     {
       path: '/admin/equipments',
       name: 'AdminEquipmentsView',
       component: () => import('../views/AdminEquipmentsView.vue'),
-      meta: { rrequiresAuth: true, role: 'admin' } // 需要认证且需要管理员权限
+      meta: { requiresAuth: true, requiresAdmin: true } // ← 修正拼写：去掉多余的 'r'
     },
     {
       path: '/admin/bookings',
       name: 'admin-bookings',
       component: () => import('../views/AdminBookingsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true } // 需要认证且需要管理员权限
+      meta: { requiresAuth: true, requiresAdmin: true }
     }
-    // ------------------------
   ]
 })
+
 import { useUserStore } from '@/stores/user'
 
-// 全局前置守卫 - 更新逻辑
+// 全局前置守卫 - 修正版（不使用 ElMessage）
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
@@ -67,23 +65,18 @@ router.beforeEach((to, from, next) => {
     } else {
       // 已登录，检查是否需要管理员权限
       if (to.matched.some(record => record.meta.requiresAdmin)) {
-        // 检查用户角色
-        if (userStore.userInfo?.role === 'admin') {
-          // 是管理员，允许访问
+        if (userStore.userRole === 'admin') {
           next()
         } else {
-          // 不是管理员，可以重定向到无权限页面或首页
-          // 这里我们简单地重定向到首页并给出提示
-          ElMessage.error('您没有权限访问此页面')
-          next('/')
+          // ❌ 不要在这里用 ElMessage！
+          // 改为跳转到无权限页面，或首页
+          next('/') // 跳回首页，由 HomeView 提示（可选）
         }
       } else {
-        // 不需要管理员权限，允许访问
         next()
       }
     }
   } else {
-    // 不需要认证，直接访问
     next()
   }
 })

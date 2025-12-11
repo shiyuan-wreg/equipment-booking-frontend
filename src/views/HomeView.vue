@@ -25,6 +25,18 @@
 <script setup>
 import { computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+onMounted(() => {
+  if (route.query.reason === 'admin_required') {
+    ElMessage.warning('您没有管理员权限')
+  }
+})
+
 
 const userStore = useUserStore()
 
