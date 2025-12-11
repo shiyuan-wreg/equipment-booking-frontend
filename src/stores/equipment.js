@@ -31,16 +31,17 @@ export const useEquipmentStore = defineStore('equipment', {
       }
     },
 
-    async updateEquipment(id, data) {
-  try {
-    await apiClient.put(`/api/equipments/${id}`, data);
-    await this.fetchEquipments(); // 自动刷新列表
-    return { success: true };
-  } catch (error) {
-    const msg = error.response?.data?.message || '更新失败';
-    return { success: false, message: msg };
-  }
-},
+    async updateEquipment(id, equipmentData) {
+      try {
+        await equipmentService.update(id, equipmentData);
+        await this.fetchEquipments();
+        return { success: true };
+      } catch (error) {
+        const message = error.response?.data?.message || '更新失败';
+        console.error(message, error);
+        return { success: false, message };
+      }
+    },
 
     async deleteEquipment(id) {
       try {
