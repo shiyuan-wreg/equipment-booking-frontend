@@ -49,6 +49,9 @@
       </el-form>
     </el-card>
   </div>
+  <div style="text-align: center; margin-top: 15px;">
+  还没有账号？<router-link to="/register">立即注册</router-link>
+</div>
 </template>
 
 <script setup>
