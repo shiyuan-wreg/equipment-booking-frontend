@@ -49,8 +49,8 @@ const router = createRouter({
       component: () => import('../views/AdminBookingsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
-     { path: '/register', component: RegisterView },
-  { path: '/login', component: LoginView }
+     { path: '/register',
+       component: RegisterView }
   ]
 })
 
