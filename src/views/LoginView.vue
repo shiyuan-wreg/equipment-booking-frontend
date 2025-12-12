@@ -49,9 +49,6 @@
       </el-form>
     </el-card>
   </div>
-  <div style="text-align: center; margin-top: 15px;">
-  还没有账号？<router-link to="/register">立即注册</router-link>
-</div>
 </template>
 
 <script setup>
@@ -118,7 +115,7 @@ const handleLogin = async () => {
   max-width: 90%; /* 在小屏幕上自适应 */
 }
 
-.card-header {
+.card-header {  
   font-size: 18px;
   font-weight: bold;
   text-align: center;
